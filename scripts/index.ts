@@ -1,7 +1,11 @@
 import * as THREE from "three";
+import * as dat from 'dat.gui';
+
+
+
 // const scene = new THREE.Scene()
 // const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-// const getSize = () => ({
+// const getSize = () => ({ 
 // 	width: window.innerWidth,
 // 	height: window.innerHeight,
 // })
@@ -103,10 +107,10 @@ var planeGeometry = new THREE.PlaneGeometry(60, 40, 1, 1)
 var planeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff })
 var plane = new THREE.Mesh(planeGeometry, planeMaterial)
 scene.add(plane)
-var ambientLight = new THREE.AmbientLight(0x0c0c0c)
-scene.add(ambientLight)
-var spotLight = new THREE.SpotLight(0xffffff)
-scene.add(spotLight)
+// var ambientLight = new THREE.AmbientLight(0x0c0c0c)
+// scene.add(ambientLight)
+// var spotLight = new THREE.SpotLight(0xffffff)
+// scene.add(spotLight)
 
 const renderer = new THREE.WebGLRenderer({ alpha: true })
 renderer.setSize(WIDTH, HEIGHT)
@@ -140,3 +144,15 @@ const animate = () => {
 	renderer.render(scene, camera)
 }
 animate()
+
+
+
+window.onload = () => {
+	const gui = new dat.GUI();
+
+	gui.add(camera.position, 'z', 0, 50).name('camera.position.z')
+	gui.add(cube.position, 'x', -10, 10).name('cube.position.x')
+	gui.add(cube.position, 'y', -10, 10).name('cube.position.y')
+
+	// gui.add(obj, 'len', 0, 1000)
+}

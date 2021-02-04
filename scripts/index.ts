@@ -1,158 +1,180 @@
-import * as THREE from "three";
-import * as dat from 'dat.gui';
+import * as THREE from 'three';
+const OrbitControls = require('three-orbitcontrols')
+import * as dat from 'dat.gui'
+
+const WIDTH = innerWidth
+const HEIGHT = innerHeight
+
+function main() {
+	const canvas = document.querySelector('canvas');
 
 
+	const renderer = new THREE.WebGLRenderer({ canvas });
+	renderer.shadowMap.enabled = true;
+	const fov = 45;
+	const aspect = 2;  // the canvas default
+	const near = 0.1;
+	const far = 100;
+	const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+	camera.position.set(0, 10, 20);
 
-// const scene = new THREE.Scene()
-// const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-// const getSize = () => ({ 
-// 	width: window.innerWidth,
-// 	height: window.innerHeight,
-// })
-// const renderer = new THREE.WebGLRenderer({alpha: true})
-// renderer.setSize(getSize().width, getSize().height)
-// document.body.appendChild(renderer.domElement)
+	const controls = new OrbitControls(camera, canvas);
+	controls.target.set(0, 5, 0);
+	controls.update();
 
-// const geometry = new THREE.BoxGeometry()
+	const scene = new THREE.Scene();
+	scene.background = new THREE.Color('black');
 
-// const material = new THREE.MeshBasicMaterial({color: 0x00ff00})
-// const cube = new THREE.Mesh(geometry, material)
-// scene.add(cube)
-// camera.position.z = 5
+	{
+		const planeSize = 30;
 
-// renderer.setClearColor('#4649ab', 0.9)
+		const loader = new THREE.TextureLoader();
+		const texture = loader.load('https://threejsfundamentals.org/threejs/resources/images/checker.png');
+		texture.wrapS = THREE.RepeatWrapping;
+		texture.wrapT = THREE.RepeatWrapping;
+		texture.magFilter = THREE.NearestFilter;
+		const repeats = planeSize / 2;
+		texture.repeat.set(repeats, repeats);
 
-// // const toggleMenu = (() => {
-// // 	const menu = `
-// //     <div class="menu_box" id="" >
-// //         // <div id="menu" >
-// //         // </div>
-// //     </div>`
-// // 	document.body.innerHTML += menu
-// // 	const menuNode = document.querySelector('.menu_box')
-// // 	return () => {
-// // 		console.log('call toggle')
-// // 		menuNode.id = menuNode.id === 'menu_box' ? '' : 'menu_box'
-// // 	}
-// // })()
+		const planeGeo = new THREE.PlaneBufferGeometry(planeSize, planeSize);
+		const planeMat = new THREE.MeshPhongMaterial({
+			map: texture,
+			side: THREE.DoubleSide,
+		});
+		const mesh = new THREE.Mesh(planeGeo, planeMat);
+		mesh.receiveShadow = true;
+		mesh.rotation.x = Math.PI * -.5;
+		scene.add(mesh);
+	}
+	{
+		const cubeSize = 4;
+		const cubeGeo = new THREE.BoxBufferGeometry(cubeSize, cubeSize, cubeSize);
+		const cubeMat = new THREE.MeshPhongMaterial({ color: '#8AC' });
+		const mesh = new THREE.Mesh(cubeGeo, cubeMat);
+		mesh.castShadow = true;
+		mesh.receiveShadow = true;
+		mesh.position.set(cubeSize + 1, cubeSize / 2, 0);
+		scene.add(mesh);
+	}
+	// VECTORS ARROW HELPERS
+	{
+		const dir = new THREE.Vector3(1, 0, 0);
+		// dir.normalize();
+		const origin = new THREE.Vector3(0, 0, 0);
+		const vectors = [
+			new THREE.Vector3(1, 0, 0),
+			new THREE.Vector3(0, 1, 0),
+			new THREE.Vector3(0, 0, 1),
 
-// let loader = new THREE.GLTFLoader()
-// loader.load('models/cactus.gltf', function (gltf) {
-// 	const car = gltf.scene.children[0]
-// 	car.scale.set(0.5, 0.5, 0.5)
-// 	scene.add(gltf.scene)
-// })
+			new THREE.Vector3(-1, 0, 0),
+			new THREE.Vector3(0, -1, 0),
+			new THREE.Vector3(0, 0, -1),
 
-// class Controller {
-// 	constructor() {
-// 		this.initializeEventHandlers()
-// 	}
+		]
+		const length = 20;
+		const hex = 0xffff00;
+		vectors.forEach((vec) => {
+			const arrowHelper = new THREE.ArrowHelper(vec, origin, length, hex);
+			scene.add(arrowHelper);
+		})
 
-// 	stepSize = 0.1
+	}
+	{
+		const sphereRadius = 3;
+		const sphereWidthDivisions = 32;
+		const sphereHeightDivisions = 16;
+		const sphereGeo = new THREE.SphereBufferGeometry(sphereRadius, sphereWidthDivisions, sphereHeightDivisions);
+		const sphereMat = new THREE.MeshPhongMaterial({ color: '#CA8' });
+		const mesh = new THREE.Mesh(sphereGeo, sphereMat);
+		mesh.castShadow = true;
+		mesh.receiveShadow = true;
+		mesh.position.set(-sphereRadius - 1, sphereRadius + 2, 0);
+		scene.add(mesh);
+	}
 
-// 	keys = {}
+	class ColorGUIHelper {
+		object: any;
+		prop: any;
+		constructor(object: any, prop: any) {
+			this.object = object;
+			this.prop = prop;
+		}
+		get value() {
+			return `#${this.object[this.prop].getHexString()}`;
+		}
+		set value(hexString) {
+			this.object[this.prop].set(hexString);
+		}
+	}
 
-// 	startAnimate = (this.animate = () => {
-// 		requestAnimationFrame(this.animate)
-// 		renderer.render(scene, camera)
-// 		Object.keys(this.keys).forEach((key) => {
-// 			if (this.keys[key]) this.onChangeCheckedState(key)
-// 		})
-// 	})
+	function makeXYZGUI(gui: any, vector3: any, name: any, onChangeFn: any) {
+		const CHANGE_SIZE = 30
+		const folder = gui.addFolder(name);
+		folder.add(vector3, 'x', -CHANGE_SIZE, CHANGE_SIZE).onChange(onChangeFn);
+		folder.add(vector3, 'y', 0, CHANGE_SIZE).onChange(onChangeFn);
+		folder.add(vector3, 'z', -CHANGE_SIZE, CHANGE_SIZE).onChange(onChangeFn);
+		folder.open();
+	}
 
-// 	initializeEventHandlers() {
-// 		window.onkeydown = (e) => {
-// 			this.keys[e.key] = true
-// 		}
-// 		window.onkeyup = (e) => {
-// 			this.keys[e.key] = false
-// 		}
-// 		window.onmousemove = (e) => {
-// 			camera.rotation.x = (e.pageY - getSize().height / 2) / 1000
-// 			camera.rotation.y = (e.pageX - getSize().width / 2) / 1000
-// 		}
-// 		window.onkeyup = (e) => {
-// 			console.log(e.key)
-// 			if (e.key === 'Escape') {
-// 				// toggleMenu() //TODO toggle menu
-// 			}
-// 		}
-// 	}
-// 	onChangeCheckedState(key) {
-// 		switch (key) {
-// 			// 	return (camera.position.x += this.stepSize)
-// 			// case 'd':
-// 			// 	return (camera.position.x -= this.stepSize)
-// 			case 'w':
-// 				cube.position.z -= this.stepSize * 0.99
-// 				return (camera.position.z -= this.stepSize)
-// 			case 's':
-// 				cube.position.z += this.stepSize * 0.99
-// 				return (camera.position.z += this.stepSize)
-// 			default:
-// 				return
-// 		}
-// 	}
-// }
+	{
+		const color = 0xFFFFFF;
+		const intensity = 1;
+		const light = new THREE.DirectionalLight(color, intensity);
+		light.castShadow = true;
+		light.position.set(0, 50, 10);
+		light.target.position.set(-1, 0, -1);
+		scene.add(light);
+		scene.add(light.target);
 
-// const controller = new Controller()
+		//ADD CAMERA HELPER
+		const cameraHelper = new THREE.CameraHelper(light.shadow.camera);
+		scene.add(cameraHelper);
+		// light.shadow.camera = 1
 
-// controller.startAnimate()
+		const helper = new THREE.DirectionalLightHelper(light);
+		scene.add(helper);
 
-const WIDTH = window.innerWidth
-const HEIGHT = window.innerHeight
-var scene = new THREE.Scene()
-var camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 1000)
-var planeGeometry = new THREE.PlaneGeometry(60, 40, 1, 1)
-var planeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff })
-var plane = new THREE.Mesh(planeGeometry, planeMaterial)
-scene.add(plane)
-// var ambientLight = new THREE.AmbientLight(0x0c0c0c)
-// scene.add(ambientLight)
-// var spotLight = new THREE.SpotLight(0xffffff)
-// scene.add(spotLight)
+		const onChange = () => {
+			light.target.updateMatrixWorld();
+			helper.update();
+		};
+		onChange();
 
-const renderer = new THREE.WebGLRenderer({ alpha: true })
-renderer.setSize(WIDTH, HEIGHT)
-document.body.appendChild(renderer.domElement)
+		const gui = new dat.GUI({ name: 'My GUI' });;
+		gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
+		gui.add(light, 'intensity', 0, 2, 0.01);
 
-const geometry = new THREE.BoxGeometry()
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-const cube = new THREE.Mesh(geometry, material)
-scene.add(cube)
-camera.position.z = 10
+		makeXYZGUI(gui, light.position, 'position', onChange);
+		makeXYZGUI(gui, light.target.position, 'target', onChange);
+	}
 
-const addCube = () => {
-	return
-	// var cubeSize = Math.ceil(Math.random() * 3)
-	// var cubeGeometry = new THREE.CubeGeometry(cubeSize, cubeSize, cubeSize)
-	// var cubeMaterial = new THREE.MeshLambertMaterial({color: Math.random() * 0xffffff})
-	// var cube = new THREE.Mesh(cubeGeometry, cubeMaterial)
-	// cube.castShadow = true
-	// cube.name = 'cube-' + scene.children.length
-	// cube.position.x = -30 + Math.round(Math.random() * planeGeometry.width)
-	// cube.position.y = Math.round(Math.random() * 5)
-	// cube.position.z = -20 + Math.round(Math.random() * planeGeometry.height)
-	// scene.add(cube)
-	// this.numberOfObjects = scene.children.length
+	function resizeRendererToDisplaySize(renderer: any) {
+		const canvas = renderer.domElement;
+		const width = canvas.clientWidth;
+		const height = canvas.clientHeight;
+		const needResize = canvas.width !== width || canvas.height !== height;
+		if (needResize) {
+			renderer.setSize(width, height, false);
+		}
+		return needResize;
+	}
+
+	function render() {
+
+		resizeRendererToDisplaySize(renderer);
+
+		{
+			const canvas = renderer.domElement;
+			camera.aspect = canvas.clientWidth / canvas.clientHeight;
+			camera.updateProjectionMatrix();
+		}
+
+		renderer.render(scene, camera);
+
+		requestAnimationFrame(render);
+	}
+
+	requestAnimationFrame(render);
 }
 
-// addCube()
-
-const animate = () => {
-	requestAnimationFrame(animate)
-	renderer.render(scene, camera)
-}
-animate()
-
-
-
-window.onload = () => {
-	const gui = new dat.GUI();
-
-	gui.add(camera.position, 'z', 0, 50).name('camera.position.z')
-	gui.add(cube.position, 'x', -10, 10).name('cube.position.x')
-	gui.add(cube.position, 'y', -10, 10).name('cube.position.y')
-
-	// gui.add(obj, 'len', 0, 1000)
-}
+main();

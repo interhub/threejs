@@ -102,7 +102,9 @@
   },
   "scripts": {
     "webpack:build": "webpack",
-    "webpack:watch": "webpack --watch"
+    "webpack:watch": "webpack --watch",
+    "server:nodemon": "nodemon server.js",
+    "server:node": "node server.js"
   },
   "keywords": [],
   "author": "",

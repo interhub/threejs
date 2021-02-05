@@ -2,8 +2,9 @@ import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threej
 import { OrbitControls } from 'https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/controls/OrbitControls.js';
 import { OBJLoader } from 'https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from 'https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/loaders/MTLLoader.js';
+import { initial } from '/initial.js'
 
-console.log('HELLO!')
+initial()
 
 function main() {
     const canvas = document.querySelector('canvas');
@@ -62,15 +63,26 @@ function main() {
     }
 
     {
+        // const mtlLoader = new MTLLoader();
+        // mtlLoader.load('https://threejsfundamentals.org/threejs/resources/models/windmill/windmill.mtl', (mtl) => {
+        //     mtl.preload();
+        //     const objLoader = new OBJLoader();
+        //     objLoader.setMaterials(mtl);
+        //     objLoader.load('https://threejsfundamentals.org/threejs/resources/models/windmill/windmill.obj', (root) => {
+        //         scene.add(root);
+        //     });
+        // });
+
         const mtlLoader = new MTLLoader();
-        mtlLoader.load('https://threejsfundamentals.org/threejs/resources/models/windmill/windmill.mtl', (mtl) => {
+        mtlLoader.load('./models/meat_boy_obj/Super_meatboy_free.mtl', (mtl) => {
             mtl.preload();
             const objLoader = new OBJLoader();
             objLoader.setMaterials(mtl);
-            objLoader.load('https://threejsfundamentals.org/threejs/resources/models/windmill/windmill.obj', (root) => {
+            objLoader.load('./models/meat_boy_obj/Super_meatboy_free.obj', (root) => {
                 scene.add(root);
             });
         });
+
     }
 
     function resizeRendererToDisplaySize(renderer) {

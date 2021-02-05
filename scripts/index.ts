@@ -115,7 +115,7 @@ function main() {
 		folder.add(vector3, 'z', -CHANGE_SIZE, CHANGE_SIZE).onChange(onChangeFn);
 		folder.open();
 	}
-
+	console.log('aa')
 	{
 		const color = 0xFFFFFF;
 		const intensity = 1;

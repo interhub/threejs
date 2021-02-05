@@ -88,6 +88,7 @@
     "terser-webpack-plugin": "^5.1.1",
     "three": "^0.125.2",
     "three-js": "^79.0.0",
+    "three-obj-mtl-loader": "^1.0.3",
     "three-orbitcontrols": "^2.110.3",
     "to-regex-range": "^5.0.1",
     "tslib": "^1.14.1",

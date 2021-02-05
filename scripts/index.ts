@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 const OrbitControls = require('three-orbitcontrols')
+// const { MTLLoader, OBJLoader } = require('three-obj-mtl-loader')
 import * as dat from 'dat.gui'
 
 const WIDTH = innerWidth
@@ -24,6 +25,20 @@ function main() {
 
 	const scene = new THREE.Scene();
 	scene.background = new THREE.Color('black');
+
+	{
+		const mtlLoader = new THREE.MaterialLoader
+		const OBJLoader = new THREE.ObjectLoader()
+		mtlLoader.load('models/meat_boy_obj/Super_meatboy_free.mtl', (mtl: any) => {
+			mtl.preload();
+			mtl.materials.Material.side = THREE.DoubleSide;
+			// OBJLoader.setMaterials(mtl);
+			OBJLoader.load('models/meat_boy_obj/Super_meatboy_free.obj', (event: any) => {
+				const root = event.detail.loaderRootNode;
+				scene.add(root);
+			});
+		});
+	}
 
 	{
 		const planeSize = 30;
@@ -115,7 +130,7 @@ function main() {
 		folder.add(vector3, 'z', -CHANGE_SIZE, CHANGE_SIZE).onChange(onChangeFn);
 		folder.open();
 	}
-	console.log('aa')
+
 	{
 		const color = 0xFFFFFF;
 		const intensity = 1;
